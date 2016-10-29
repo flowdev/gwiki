@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <title>Editing {{ if .Title }}{{ .Title }}{{ else }}{{ .Path }}{{ end }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+  <link rel="shortcut icon" href="/static/img/favicon.ico"/>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/milligram.min.css">
+</head>
+<body>
+  <header>
+	  <h1>Editing {{ if .Title }}{{.Title}}{{ else }}{{ .Path }}{{ end }}</h1>
+  </header>
+  <div id="container" class="row">
+    <div class="column">
+      {{printf "%s" .Body}}
+	</div>
+    <div class="column">
+      <form action="/save/{{.Path}}" method="POST">
+        <div><textarea name="body" rows="30" cols="80">{{printf "%s" .Body}}</textarea></div>
+        <div><input type="submit" value="Save"></div>
+      </form>
+	</div>
+    <div class="column">
+		<h2>Help!</h2>
+	</div>
+  </div>
+</body>
+</html>
