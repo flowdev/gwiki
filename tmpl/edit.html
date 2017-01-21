@@ -15,13 +15,19 @@
   <div id="container" class="row">
     <div class="column">
       <form action="/save/{{.Path}}" method="POST">
-		<div>
+		<fieldset>
 		  <label for="title">Title</label>
 		  <input type="text" name="title" id="title" maxlength="80" value="{{.Title}}">
 
 		  <label for="description">Description</label>
-		  <textarea name="description" rows="5" cols="60">{{.Description}}</textarea></div>
-date = "2017-08-15"
+		  <textarea name="description" rows="5" cols="60">{{.Description}}</textarea>
+
+		  <label for="body">Text</label>
+          <textarea name="body" rows="40" cols="100">{{printf "%s" .Body}}</textarea>
+
+		  <label for="date">Date</label>
+		  <input type="date" name="date" id="date" value="{{.Date}}">
+
 		  <label for="tags">Tags</label>
 		  <input type="text" name="tags" id="tags" maxlength="100" value="{{range .Tags}}{{.}} {{end}}">
 
@@ -30,9 +36,8 @@ date = "2017-08-15"
 
 		  <label for="language">Language</label>
 		  <input type="text" name="language" id="language" maxlength="2" value="{{.Language}}">
-		</div>
-        <div><textarea name="body" rows="40" cols="100">{{printf "%s" .Body}}</textarea></div>
-        <div><input type="submit" value="Save"></div>
+		</fieldset>
+        <input type="submit" value="Save">
       </form>
 	</div>
     <div class="column">
