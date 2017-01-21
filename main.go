@@ -63,6 +63,12 @@ func (p *Page) Tags() []string {
 	if v, ok := p.FrontMatter["tags"]; ok {
 		if s, ok := v.([]string); ok {
 			return s
+		} else if es, ok := v.([]interface{}); ok {
+			ss := make([]string, len(es))
+			for i, e := range es {
+				ss[i] = fmt.Sprintf("%s", e)
+			}
+			return ss
 		} else {
 			return []string{fmt.Sprintf("No_string_slice:%#v", v)}
 		}

@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en-US">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Editing {{if .Title}}{{.Title}}{{else}}{{.Path}}{{end}}</title>
@@ -17,21 +17,21 @@
       <form action="/save/{{.Path}}" method="POST">
 		<div>
 		  <label for="title">Title</label>
-		  <input type="text" name="title" id="title" maxlength="80">
+		  <input type="text" name="title" id="title" maxlength="80" value="{{.Title}}">
 
 		  <label for="description">Description</label>
 		  <textarea name="description" rows="5" cols="60">{{.Description}}</textarea></div>
 date = "2017-08-15"
 		  <label for="tags">Tags</label>
-		  <input type="text" name="tags" id="tags" maxlength="100">
+		  <input type="text" name="tags" id="tags" maxlength="100" value="{{range .Tags}}{{.}} {{end}}">
 
 		  <label for="draft">Draft</label>
 		  <input type="checkbox" name="draft" value="draft"{{if .Draft}} checked{{end}}>
 
 		  <label for="language">Language</label>
-		  <input type="text" name="language" id="language" maxlength="2">
+		  <input type="text" name="language" id="language" maxlength="2" value="{{.Language}}">
 		</div>
-        <div><textarea name="body" rows="30" cols="80">{{.Body}}</textarea></div>
+        <div><textarea name="body" rows="40" cols="100">{{printf "%s" .Body}}</textarea></div>
         <div><input type="submit" value="Save"></div>
       </form>
 	</div>
