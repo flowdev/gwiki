@@ -16,7 +16,7 @@ package parser
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 
 	toml "github.com/pelletier/go-toml"
@@ -32,7 +32,7 @@ type frontmatterType struct {
 
 func InterfaceToConfig(in interface{}, mark rune) ([]byte, error) {
 	if in == nil {
-		return []byte{}, fmt.Errorf("input was nil")
+		return []byte{}, errors.New("input was nil")
 	}
 
 	b := new(bytes.Buffer)
@@ -64,13 +64,13 @@ func InterfaceToConfig(in interface{}, mark rune) ([]byte, error) {
 		}
 		return b.Bytes(), nil
 	default:
-		return nil, fmt.Errorf("Unsupported Format provided")
+		return nil, errors.New("Unsupported Format provided")
 	}
 }
 
 func InterfaceToFrontMatter(in interface{}, mark rune) ([]byte, error) {
 	if in == nil {
-		return []byte{}, fmt.Errorf("input was nil")
+		return []byte{}, errors.New("input was nil")
 	}
 
 	b := new(bytes.Buffer)
@@ -116,7 +116,7 @@ func InterfaceToFrontMatter(in interface{}, mark rune) ([]byte, error) {
 		}
 		return b.Bytes(), nil
 	default:
-		return nil, fmt.Errorf("Unsupported Format provided")
+		return nil, errors.New("Unsupported Format provided")
 	}
 }
 
@@ -180,16 +180,12 @@ func removeTOMLIdentifier(datum []byte) []byte {
 
 func HandleYAMLMetaData(datum []byte) (interface{}, error) {
 	m := map[string]interface{}{}
-	if err := yaml.Unmarshal(datum, &m); err != nil {
-		return m, err
-	}
-	return m, nil
+	err := yaml.Unmarshal(datum, &m)
+	return m, err
 }
 
 func HandleJSONMetaData(datum []byte) (interface{}, error) {
 	var f interface{}
-	if err := json.Unmarshal(datum, &f); err != nil {
-		return f, err
-	}
-	return f, nil
+	err := json.Unmarshal(datum, &f)
+	return f, err
 }

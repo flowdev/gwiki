@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
   <meta charset="UTF-8">
-  <title>Editing {{ if .Title }}{{ .Title }}{{ else }}{{ .Path }}{{ end }}</title>
+  <title>Editing {{if .Title}}{{.Title}}{{else}}{{.Path}}{{end}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
   <link rel="shortcut icon" href="/static/img/favicon.ico"/>
   <link rel="stylesheet" href="/static/css/style.css">
@@ -10,15 +10,28 @@
 </head>
 <body>
   <header>
-	  <h1>Editing {{ if .Title }}{{.Title}}{{ else }}{{ .Path }}{{ end }}</h1>
+	  <h1>Editing {{if .Title}}{{.Title}}{{else}}{{.Path}}{{end}}</h1>
   </header>
   <div id="container" class="row">
     <div class="column">
-      {{printf "%s" .Body}}
-	</div>
-    <div class="column">
       <form action="/save/{{.Path}}" method="POST">
-        <div><textarea name="body" rows="30" cols="80">{{printf "%s" .Body}}</textarea></div>
+		<div>
+		  <label for="title">Title</label>
+		  <input type="text" name="title" id="title" maxlength="80">
+
+		  <label for="description">Description</label>
+		  <textarea name="description" rows="5" cols="60">{{.Description}}</textarea></div>
+date = "2017-08-15"
+		  <label for="tags">Tags</label>
+		  <input type="text" name="tags" id="tags" maxlength="100">
+
+		  <label for="draft">Draft</label>
+		  <input type="checkbox" name="draft" value="draft"{{if .Draft}} checked{{end}}>
+
+		  <label for="language">Language</label>
+		  <input type="text" name="language" id="language" maxlength="2">
+		</div>
+        <div><textarea name="body" rows="30" cols="80">{{.Body}}</textarea></div>
         <div><input type="submit" value="Save"></div>
       </form>
 	</div>
