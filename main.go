@@ -18,6 +18,7 @@ const (
 	ContentDir  = "./content/"
 	TemplateDir = "./tmpl/"
 	Address     = ":1515"
+	DateFormat  = "2006-01-02"
 )
 
 var templates = template.Must(template.ParseFiles(TemplateDir+"edit.html", TemplateDir+"view.html"))
@@ -53,10 +54,15 @@ func (p *Page) Date() string {
 	} else {
 		log.Printf("WARNING: No date on page '%s'.", p.Path)
 	}
-	return d.Format("2006-01-02")
+	return d.Format(DateFormat)
 }
-func (p *Page) SetDate(d time.Time) {
-	p.FrontMatter["date"] = d
+func (p *Page) SetDate(d string) {
+	t, err := time.Parse(DateFormat, d)
+	if err != nil {
+		log.Printf("ERROR: Ill formatted date for page '%s': %s", p.Path, d)
+	} else {
+		p.FrontMatter["date"] = t
+	}
 }
 func (p *Page) Tags() []string {
 	if v, ok := p.FrontMatter["tags"]; ok {
@@ -170,26 +176,29 @@ func viewHandler(w http.ResponseWriter, r *http.Request, path string) {
 func editHandler(w http.ResponseWriter, r *http.Request, path string) {
 	p, err := LoadPage(path)
 	if err != nil {
-		log.Printf("ERROR: While loading the page %s: %s\n", path, err)
+		log.Printf("ERROR: While loading the page '%s': %s\n", path, err)
 		p = &Page{Path: path}
 	}
 	renderTemplate(w, "edit", p)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request, path string) {
-	body := r.FormValue("body")
 	p, err := LoadPage(path)
 	if err != nil {
-		log.Printf("ERROR: Creating page because of: %s\n", err)
-		p = &Page{Path: path, Body: []byte(body)}
+		log.Printf("ERROR: Unable to load page '%s': %s\n", path, err)
+		p = &Page{Path: path}
 	}
-	err = p.Save()
-	if err != nil {
-		log.Printf("ERROR: %s\n", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, "/view/"+path, http.StatusFound)
+	body := r.FormValue("body")
+	log.Printf("DEBUG: 'Saving' body: %s\n", body)
+	p.Body = []byte(body)
+	//	err = p.Save()
+	//	if err != nil {
+	//		log.Printf("ERROR: %s\n", err)
+	//		http.Error(w, err.Error(), http.StatusInternalServerError)
+	//		return
+	//	}
+	//http.Redirect(w, r, "/view/"+path, http.StatusFound)
+	http.Redirect(w, r, "/edit/"+path, http.StatusFound)
 }
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
