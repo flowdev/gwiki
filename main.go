@@ -17,6 +17,7 @@ const (
 	Suffix      = ".md"
 	ContentDir  = "./content/"
 	TemplateDir = "./tmpl/"
+	Address     = ":1515"
 )
 
 var templates = template.Must(template.ParseFiles(TemplateDir+"edit.html", TemplateDir+"view.html"))
@@ -41,20 +42,18 @@ func (p *Page) Description() string {
 func (p *Page) SetDescription(d string) {
 	p.FrontMatter["description"] = d
 }
-func (p *Page) Date() time.Time {
+func (p *Page) Date() string {
+	d := time.Now()
 	if v, ok := p.FrontMatter["date"]; ok {
 		if t, ok := v.(time.Time); ok {
-			return t
+			d = t
 		} else {
 			log.Printf("ERROR: Ill formatted date on page '%s': %#v", p.Path, v)
-			var t time.Time
-			return t // return zero value
 		}
 	} else {
 		log.Printf("WARNING: No date on page '%s'.", p.Path)
-		var t time.Time
-		return t // return zero value
 	}
+	return d.Format("2006-01-02")
 }
 func (p *Page) SetDate(d time.Time) {
 	p.FrontMatter["date"] = d
@@ -147,10 +146,10 @@ func LoadPage(path string) (*Page, error) {
 	p := &Page{Path: path, Mark: rune(pg.FrontMatter()[0]), Body: pg.Content()}
 	md, err := pg.Metadata()
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error parsing frontmatter of file '%s': %s", path, err))
+		return nil, fmt.Errorf("error parsing frontmatter of file '%s': %s", path, err)
 	}
 	if md == nil {
-		return nil, errors.New(fmt.Sprintf("no frontmatter in file '%s': %s", path, err))
+		return nil, fmt.Errorf("no frontmatter in file '%s': %s", path, err)
 	}
 	m := md.(map[string]interface{})
 	p.FrontMatter = m
@@ -171,7 +170,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, path string) {
 func editHandler(w http.ResponseWriter, r *http.Request, path string) {
 	p, err := LoadPage(path)
 	if err != nil {
-		log.Printf("ERROR: %s\n", err)
+		log.Printf("ERROR: While loading the page %s: %s\n", path, err)
 		p = &Page{Path: path}
 	}
 	renderTemplate(w, "edit", p)
@@ -217,5 +216,6 @@ func main() {
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	http.ListenAndServe(":1515", nil)
+	log.Printf("INFO: Starting web server on address: '%s'\n", Address)
+	http.ListenAndServe(Address, nil)
 }

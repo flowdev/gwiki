@@ -28,14 +28,17 @@
 		  <label for="date">Date</label>
 		  <input type="date" name="date" id="date" value="{{.Date}}">
 
-		  <label for="tags">Tags</label>
-		  <input type="text" name="tags" id="tags" maxlength="100" value="{{range .Tags}}{{.}} {{end}}">
-
 		  <label for="draft">Draft</label>
 		  <input type="checkbox" name="draft" value="draft"{{if .Draft}} checked{{end}}>
 
+		  <label for="tags">Tags</label>
+		  <input type="text" name="tags" id="tags" maxlength="100" value="{{range .Tags}}{{.}} {{end}}">
+
 		  <label for="language">Language</label>
-		  <input type="text" name="language" id="language" maxlength="2" value="{{.Language}}">
+		  <select id="language" name="language">
+			<option value="en"{{if eq .Language "en"}} selected{{end}}>English</option>
+			<option value="de"{{if eq .Language "de"}} selected{{end}}>Deutsch</option>
+		  </select>
 		</fieldset>
         <input type="submit" value="Save">
       </form>
