@@ -99,7 +99,7 @@ func InterfaceToFrontMatter(in interface{}, mark rune) ([]byte, error) {
 
 		tree := toml.TreeFromMap(in.(map[string]interface{}))
 		b.Write([]byte(tree.String()))
-		_, err = b.Write([]byte("\n" + TOMLDelimUnix))
+		_, err = b.Write([]byte(TOMLDelimUnix))
 		if err != nil {
 			return nil, err
 		}

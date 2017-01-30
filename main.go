@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/flowdev/gwiki/parser"
@@ -81,14 +82,19 @@ func (p *Page) Tags() []string {
 		return nil
 	}
 }
-func (p *Page) SetTags(t []string) {
-	p.FrontMatter["tags"] = t
+func (p *Page) SetTags(t string) {
+	ts := strings.Fields(t)
+	if p.Mark == '+' {
+		p.FrontMatter["tags"] = toInterSlice(ts)
+	} else {
+		p.FrontMatter["tags"] = ts
+	}
 }
 func (p *Page) Language() string {
 	return getString(p, "language")
 }
-func (p *Page) SetLanguage(t string) {
-	p.FrontMatter["language"] = t
+func (p *Page) SetLanguage(l string) {
+	p.FrontMatter["language"] = l
 }
 func (p *Page) Draft() bool {
 	if v, ok := p.FrontMatter["draft"]; ok {
@@ -103,8 +109,8 @@ func (p *Page) Draft() bool {
 		return true
 	}
 }
-func (p *Page) SetDraft(d bool) {
-	p.FrontMatter["draft"] = d
+func (p *Page) SetDraft(d string) {
+	p.FrontMatter["draft"] = strings.EqualFold(d, "true")
 }
 func getString(p *Page, key string) string {
 	if v, ok := p.FrontMatter[key]; ok {
@@ -116,6 +122,13 @@ func getString(p *Page, key string) string {
 	} else {
 		return ""
 	}
+}
+func toInterSlice(ss []string) []interface{} {
+	is := make([]interface{}, len(ss))
+	for i, s := range ss {
+		is[i] = s
+	}
+	return is
 }
 
 func (p *Page) Save() error {
@@ -149,7 +162,7 @@ func LoadPage(path string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := &Page{Path: path, Mark: rune(pg.FrontMatter()[0]), Body: pg.Content()}
+	p := &Page{Path: path, Mark: mark(pg.FrontMatter()), Body: pg.Content()}
 	md, err := pg.Metadata()
 	if err != nil {
 		return nil, fmt.Errorf("error parsing frontmatter of file '%s': %s", path, err)
@@ -161,6 +174,12 @@ func LoadPage(path string) (*Page, error) {
 	p.FrontMatter = m
 
 	return p, nil
+}
+func mark(fm []byte) rune {
+	if len(fm) > 0 {
+		return rune(fm[0])
+	}
+	return '+'
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, path string) {
@@ -188,15 +207,21 @@ func saveHandler(w http.ResponseWriter, r *http.Request, path string) {
 		log.Printf("ERROR: Unable to load page '%s': %s\n", path, err)
 		p = &Page{Path: path}
 	}
-	body := r.FormValue("body")
-	log.Printf("DEBUG: 'Saving' body: %s\n", body)
-	p.Body = []byte(body)
-	//	err = p.Save()
-	//	if err != nil {
-	//		log.Printf("ERROR: %s\n", err)
-	//		http.Error(w, err.Error(), http.StatusInternalServerError)
-	//		return
-	//	}
+	p.Body = []byte(r.FormValue("body"))
+	p.SetDraft(r.FormValue("draft"))
+	p.SetLanguage(r.FormValue("language"))
+	p.SetDate(r.FormValue("date"))
+	p.SetTitle(r.FormValue("title"))
+	p.SetTags(r.FormValue("tags"))
+	p.SetDescription(r.FormValue("description"))
+	log.Printf("DEBUG: 'Saving' (draft: %t, lang: %s, date: %v, title: %s, tags: %v, desc: %s) body: %s\n",
+		p.FrontMatter["draft"], p.FrontMatter["language"], p.FrontMatter["date"], p.FrontMatter["title"], p.FrontMatter["tags"], p.FrontMatter["description"], p.Body)
+	err = p.Save()
+	if err != nil {
+		log.Printf("ERROR: %s\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	//http.Redirect(w, r, "/view/"+path, http.StatusFound)
 	http.Redirect(w, r, "/edit/"+path, http.StatusFound)
 }
