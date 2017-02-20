@@ -110,7 +110,7 @@ func (p *Page) Draft() bool {
 	}
 }
 func (p *Page) SetDraft(d string) {
-	p.FrontMatter["draft"] = strings.EqualFold(d, "true")
+	p.FrontMatter["draft"] = strings.EqualFold(d, "on")
 }
 func getString(p *Page, key string) string {
 	if v, ok := p.FrontMatter[key]; ok {
